@@ -56,3 +56,29 @@ def create_certificate():
     db.session.commit()
 
     return jsonify(certificate.to_dict()), 201
+
+@certificates_bp.route(
+    "/certificates/<string:certificate_id>/revoke",
+    methods=["PATCH"]
+)
+def revoke_certificate(certificate_id):
+
+    certificate = Certificate.query.filter_by(
+        certificate_id=certificate_id
+    ).first()
+
+    if certificate is None:
+        return jsonify({
+            "error": "Certificate not found"
+        }), 404
+
+    if certificate.status == "Revoked":
+        return jsonify({
+            "error": "Certificate is already revoked"
+        }), 409
+
+    certificate.status = "Revoked"
+
+    db.session.commit()
+
+    return jsonify(certificate.to_dict()), 200

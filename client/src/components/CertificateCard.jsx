@@ -1,14 +1,20 @@
 
 function CertificateCard({ certificate, revokeCertificate }) {
-  function handleRevoke() {
-    const confirmed = window.confirm(
-      `Are you sure you want to revoke ${certificate.id}?`
-    );
+ async function handleRevoke() {
+  const confirmed = window.confirm(
+    `Are you sure you want to revoke ${certificate.id}?`
+  );
 
-    if (confirmed) {
-      revokeCertificate(certificate.id);
-    }
+  if (!confirmed) {
+    return;
   }
+
+  try {
+    await revokeCertificate(certificate.id);
+  } catch (error) {
+    alert(error.message);
+  }
+}
 
   return (
     <div className="certificate-card">
