@@ -9,7 +9,7 @@ function IssueCertificate({ setPage, addcertificate }) {
   const [issueDate, setIssueDate] = useState("");
   const [message, setMessage] = useState("");
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     if (!studentName || !studentId || !course || !institution || !issueDate) {
@@ -17,23 +17,28 @@ function IssueCertificate({ setPage, addcertificate }) {
       return;
     }
 
-    const newCertificate = {
-      id: `CERT-${Date.now()}`,
-      studentName,
-      studentId,
-      course,
-      institution,
-      issueDate,
-      status: "Valid",
-    };
+   const certificateData = {
+  studentName,
+  studentId,
+  course,
+  institution,
+  issueDate,
+};
 
-    addCertificate(newCertificate);
-    setMessage("Certificate added successfully (demo only).");
+try {
+  const savedCertificate = await addCertificate(certificateData);
 
-    setStudentName("");
-    setStudentId("");
-    setCourse("");
-    setIssueDate("");
+  setMessage(
+    `Certificate ${savedCertificate.id} saved successfully!`
+  );
+
+  setStudentName("");
+  setStudentId("");
+  setCourse("");
+  setIssueDate("");
+} catch (error) {
+  setMessage(error.message);
+}
   }
 
   return (

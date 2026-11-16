@@ -1,26 +1,63 @@
 
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import IssueCertificate from "./pages/IssueCertificate";
 import Certificates from "./pages/Certificates";
 import VerifyCertificate from "./pages/VerifyCertificate";
-import initialCertificates from "./data/certificates";
 import "./App.css";
 
 function App() {
   const [page, setPage] = useState("home");
 
-  const [certificates, setCertificates] = useState(initialCertificates);
+  const [certificates, setCertificates] = useState([]);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState("");
 
-  function addCertificate(newCertificate) {
-    setCertificates((previousCertificates) => [
-      ...previousCertificates,
-      newCertificate,
-    ]);
+
+useEffect(() => {
+  fetch("http://localhost:5555/certificates")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to fetch certificates");
+      }
+
+      return response.json();
+    })
+    .then((data) => {
+      setCertificates(data);
+    })
+    .catch((error) => {
+      setError(error.message);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+}, []);
+
+async function addCertificate(certificateData) {
+  const response = await fetch("http://localhost:5555/certificates", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(certificateData),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Failed to issue certificate");
   }
 
+  setCertificates((previousCertificates) => [
+    ...previousCertificates,
+    data,
+  ]);
+
+  return data;
+}
 function revokeCertificate(certificateId) {
   setCertificates((previousCertificates) =>
     previousCertificates.map((certificate) =>
