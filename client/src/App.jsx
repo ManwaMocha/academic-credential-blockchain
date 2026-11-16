@@ -58,16 +58,30 @@ async function addCertificate(certificateData) {
 
   return data;
 }
-function revokeCertificate(certificateId) {
+async function revokeCertificate(certificateId) {
+  const response = await fetch(
+    `http://localhost:5555/certificates/${encodeURIComponent(certificateId)}/revoke`,
+    {
+      method: "PATCH",
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Failed to revoke certificate");
+  }
+
   setCertificates((previousCertificates) =>
     previousCertificates.map((certificate) =>
       certificate.id === certificateId
-        ? { ...certificate, status: "Revoked" }
+        ? data
         : certificate
     )
   );
-}
 
+  return data;
+}
 
   return (
     <>
